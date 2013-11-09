@@ -48,73 +48,42 @@ public class Solver extends Thread{
 
 	/** Implementation of single position **/
 	private void singlePosition() {
-		byte counter;
-		Cell candidate = null;
-		ArrayBlockingQueue<Cell> emptyCollection;
 		for (byte value =  1; value <= possibilities ; value++) { 
 			//go through each possible value until the maximum value is reached
 			for (byte row = 0; row > rows; row++) { 
-				//for each of those values go though every column of the cell
-				counter = 0;
-				emptyCollection = suBoard.getHorizontalCells(row);
-				while(!emptyCollection.isEmpty()){
-					Cell cCell = emptyCollection.poll();
-					if (cCell.canBe(value)) { 
-						candidate = cCell; //store a cell containing that value 
-						counter++; //increment the occurrences of that value.
-					}
-				}
-				if (counter==1) { 
-					//if only one cell was found change the value of the current cell to the value being evaluated
-					//suBoard.setBlock(candidate.getXPos(), candidate.getYPos(), value);
-					for (byte pMark =1; pMark<=possibilities; pMark++) {
-						if (pMark != value) {
-							candidate.eliminatePossibility(pMark);
-						}
-					}
-				} 
+				ArrayBlockingQueue<Cell> emptyCollection = suBoard.getHorizontalCells(row);
+				singlePositioner(emptyCollection,value);
 			}
 			for (byte column = 0; column < columns; column++) { //repeat for each column
-				counter = 0;
-				emptyCollection = suBoard.getVerticalCells(column);
-				while(!emptyCollection.isEmpty()){
-					Cell cCell = emptyCollection.poll();
-					if (cCell.canBe(value)) {
-						candidate = cCell;
-						counter++;
-					}
-				}
-				if (counter==1) {
-					//suBoard.setBlock(candidate.getXPos(), candidate.getYPos(), value);
-					for (byte pMark =1; pMark<=possibilities; pMark++) {
-						if (pMark != value) {
-							candidate.eliminatePossibility(pMark);
-						}
-					}
-				}
+				ArrayBlockingQueue<Cell> emptyCollection = suBoard.getVerticalCells(column);
+				singlePositioner(emptyCollection,value);
 			}
 			for (byte subgrid = 1; subgrid <= subgrids; subgrid++) { //repeat for each subgrid
-				counter = 0;
-				emptyCollection = suBoard.getSubgridCells(subgrid);
-				while(!emptyCollection.isEmpty()){
-					Cell cCell = emptyCollection.poll();
-					if (cCell.canBe(value)) {
-						candidate = cCell;
-						counter++;
-					}
-				}
-				if (counter==1) {
-					//suBoard.setBlock(candidate.getXPos(), candidate.getYPos(), value);
-					for (byte pMark =1; pMark<=possibilities; pMark++) {
-						if (pMark != value) {
-							candidate.eliminatePossibility(pMark);
-						}
-					}
-				} 
+				ArrayBlockingQueue<Cell> emptyCollection = suBoard.getSubgridCells(subgrid);
+				singlePositioner(emptyCollection,value);
 			} 
 		}
 	}
 
+	private void singlePositioner(ArrayBlockingQueue<Cell> emptyCollection, byte value){
+		Cell candidate = null;	
+		byte counter = 0;
+		while(!emptyCollection.isEmpty()){
+			Cell cCell = emptyCollection.poll();
+			if (cCell.canBe(value)) { 
+				candidate = cCell; //store a cell containing that value 
+				counter++; //increment the occurrences of that value.
+			}
+		}
+		if (counter==1) { 
+			//if only one cell was found change the value of the current cell to the value being evaluated
+			for (byte pMark =1; pMark<=possibilities; pMark++) {
+				if (pMark != value) {
+					candidate.eliminatePossibility(pMark);
+				}
+			}
+		} 
+	}
 
 	/** Checks and eliminates naked triples to naked sextuples. **/
 	private void superPairs() {
